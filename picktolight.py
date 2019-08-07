@@ -238,8 +238,11 @@ class Interface():
         GPIO.output(config.GPIOSlot1, 0)
         GPIO.output(config.GPIOSlot2, 0)
         if(config.doubleRack):
-            GPIO.output(config.GPIOSlot3, 0)
-            GPIO.output(config.GPIOSlot4, 0)
+            try:
+                GPIO.output(config.GPIOSlot3, 0)
+                GPIO.output(config.GPIOSlot4, 0)
+            except:
+                pass
         GPIO.cleanup()
         self.ui.destroy()
         
@@ -313,9 +316,9 @@ class ReadCMC(threading.Thread):
                     UI.NextModelH.set(Model2)
                     UI.NextKeyPartH.set(KeyPart2)
                     if(self.Reference == 1):
-                        UI.RackNameH.set(UI.RackNameH.get() + ".1")
+                        UI.RackNameH.set(config.packName + ".1")
                     else:
-                        UI.RackNameH.set(UI.RackNameH.get() + ".3")
+                        UI.RackNameH.set(config.packName + ".3")
                     GPIO.output(GPIO1, 1)
                     matching = True
                 elif(Model2 in splData[0] or splData[0] in Model2):
@@ -324,9 +327,9 @@ class ReadCMC(threading.Thread):
                     UI.NextModelH.set(Model1)
                     UI.NextKeyPartH.set(KeyPart1)
                     if(self.Reference == 1):
-                        UI.RackNameH.set(UI.RackNameH.get() + ".2")
+                        UI.RackNameH.set(config.packName + ".2")
                     else:
-                        UI.RackNameH.set(UI.RackNameH.get() + ".4")
+                        UI.RackNameH.set(config.packName + ".4")
                     GPIO.output(GPIO2, 1)
                     matching = True
                 if(not matching):
