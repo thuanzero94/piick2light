@@ -235,7 +235,15 @@ class Interface():
     def closing(self):
         global runWhile
         runWhile = False
+        GPIO.output(config.GPIOSlot1, 0)
+        GPIO.output(config.GPIOSlot2, 0)
+        if(self.DoubelCheckBox.get()):
+            GPIO.output(config.GPIOSlot3, 0)
+            GPIO.output(config.GPIOSlot4, 0)
+        GPIO.cleanup()
         self.ui.destroy()
+        
+
     def Dialog(self):
         self.ui.mainloop()
 
@@ -301,14 +309,14 @@ class ReadCMC(threading.Thread):
                 if(Model1 in splData[0] or splData[0] in Model1):
                     UI.ModelNameH.set(Model1)
                     UI.KeyPartNoH.set(splData[1])
-                    UI.NextModelH(Model2)
+                    UI.NextModelH.set(Model2)
                     UI.NextKeyPartH.set(KeyPart2)
                     GPIO.output(GPIO1, 1)
                     matching = True
                 elif(Model2 in splData[0] or splData[0] in Model2):
                     UI.ModelNameH.set(Model2)
                     UI.KeyPartNoH.set(splData[1])
-                    UI.NextModelH(Model1)
+                    UI.NextModelH.set(Model1)
                     UI.NextKeyPartH.set(KeyPart1)
                     GPIO.output(GPIO2, 1)
                     matching = True
