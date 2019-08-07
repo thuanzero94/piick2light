@@ -11,7 +11,7 @@ hasError = False
 class Configuration():
     def __init__(self):
         self.path = "settings.json"
-        self.defaultData = {"sizeUI":"1024x550","ipServer":"127.0.0.1", "portServer":1996, "comPort1":"/dev/ttyUSB0",\
+        self.defaultData = {"sizeUI":"1024x550","ipServer":"10.239.106.131", "portServer":1996, "comPort1":"/dev/ttyUSB0",\
                             "comPort2":"/dev/ttyUSB1","baudComPort": 9600, "GPIOSlot1":2, "GPIOSlot2":3,"GPIOSlot3":4, "GPIOSlot4":5,"DoubleRack":False, "packName":"P21", "backGround":"linen"}
         self.data = None
         self.sizeUI = None
@@ -273,24 +273,25 @@ class ReadCMC(threading.Thread):
                 self.Serial.open()
             self.ReadData()
     def ReadData(self):
-        data = b''
         while runWhile:
             time.sleep(0.1)
             if(SV.state):
-                data = self.Serial.read_all()
-                if (data != b''):
-                    data += self.Serial.read_all()
-                    try:
-                        logging.warning("IT send: " + data.decode())
-                        self.Processing(data.decode())
-                    except:
-                        logging.error(traceback.format_exc())
+                data = b''
+                while runWhile:
+                    s = self.Serial.read()
+                    if(s != chr(0x00) and s != chr(0x1F)):
+                        data += s
+                    if(s == b'\r'):
+                        break
+                print(data)
+                try:
+                    logging.warning("IT send: " + data)
+                    self.Processing(data.decode())
+                except:
+                    logging.error(traceback.format_exc())
             else:
                 continue
     def Processing(self,data):
-        data = data.strip()
-        data = data.strip(chr(0x00))
-        data = data.strip(chr(0x1f))
         splData = data.split("^")
         matching = False
         if(self.Reference == 1):
@@ -303,7 +304,7 @@ class ReadCMC(threading.Thread):
             GPIO2 = config.GPIOSlot4
             Model1 = config.modelNameInSlot[2]
             Model2 = config.modelNameInSlot[3]
-        if(len(splData)>=3):
+        if(len(splData)==3):
             if("PASS" in splData[2].upper() and Model1 != "" and Model2 != ""):
                 if(Model1 in splData[0] or splData[0] in Model1):
                     UI.ModelNameH.set(splData[0])
