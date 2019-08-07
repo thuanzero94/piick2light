@@ -2,7 +2,7 @@ from tkinter import Tk, ttk, Label, Text, Frame, NO, \
     StringVar, BOTTOM, X, END, Button,messagebox, Checkbutton,IntVar, BooleanVar
 import sys, threading, socket, time, json, os
 import  logging, traceback,serial
-#import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 
 logging.basicConfig(filename='app.log', filemode='w', format='[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} |%(levelname)s - %(message)s')
 
@@ -196,19 +196,6 @@ class Interface():
         bt.place(x=20 + 30 * self.sizeFont / 2, y=positions * height - round(self.sizeFont / 4))
 
     def updateParameter(self):
-        # self.sizeUI = self.data["sizeUI"]
-        # self.ipServer = self.data["ipServer"]
-        # self.portServer = self.data["portServer"]
-        # self.comPort1 = self.data["comPort1"]
-        # self.comPort2 = self.data["comPort2"]
-        # self.baudComPort = self.data["baudComPort"]
-        # self.GPIOSlot1 = self.data["GPIOSlot1"]
-        # self.GPIOSlot2 = self.data["GPIOSlot2"]
-        # self.GPIOSlot3 = self.data["GPIOSlot3"]
-        # self.GPIOSlot4 = self.data["GPIOSlot4"]
-        # self.packName = self.data["packName"]
-        # self.backGround = self.data["backGround"]
-        # self.doubleRack = self.data["DoubleRack"]
         config.update("ipServer", self.IPServerTextbox.get("1.0", END).strip())
         config.update("portServer", (int)(self.PortServerTextbox.get("1.0", END).strip()))
         config.update("comPort1", (self.CMC1Textbox.get("1.0", END).strip()))
@@ -283,9 +270,7 @@ class ReadCMC(threading.Thread):
                         data += s
                     if(s == b'\r'):
                         break
-                print(data)
                 try:
-                    logging.warning("IT send: " + data)
                     self.Processing(data.decode())
                 except:
                     logging.error(traceback.format_exc())
@@ -304,17 +289,19 @@ class ReadCMC(threading.Thread):
             GPIO2 = config.GPIOSlot4
             Model1 = config.modelNameInSlot[2]
             Model2 = config.modelNameInSlot[3]
+        GPIO.output(GPIO1, 0)
+        GPIO.output(GPIO2, 0)
         if(len(splData)==3):
             if("PASS" in splData[2].upper() and Model1 != "" and Model2 != ""):
                 if(Model1 in splData[0] or splData[0] in Model1):
-                    UI.ModelNameH.set(splData[0])
+                    UI.ModelNameH.set(Model1)
                     UI.KeyPartNoH.set(splData[1])
-                    print(1)
+                    GPIO.output(GPIO1, 1)
                     matching = True
                 elif(Model2 in splData[0] or splData[0] in Model2):
-                    UI.ModelNameH.set(splData[0])
+                    UI.ModelNameH.set(Model2)
                     UI.KeyPartNoH.set(splData[1])
-                    print(2)
+                    GPIO.output(GPIO2, 1)
                     matching = True
                 if(not matching):
                     UI.setStatus("\"{}\" model incorrect!".format(splData[0]), "red")
@@ -391,6 +378,15 @@ UI = Interface()
 SV = ServerCommunication()
 SV.start()
 ReadCMC(1).start()
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(config.GPIOSlot1, GPIO.OUT)
+GPIO.setup(config.GPIOSlot2, GPIO.OUT)
+GPIO.output(config.GPIOSlot1, 0)
+GPIO.output(config.GPIOSlot2, 0)
 if(UI.DoubelCheckBox.get()):
     ReadCMC(2).start()
+    GPIO.setup(config.GPIOSlot3, GPIO.OUT)
+    GPIO.setup(config.GPIOSlot4, GPIO.OUT)
+    GPIO.output(config.GPIOSlot3, 0)
+    GPIO.output(config.GPIOSlot4, 0)
 UI.Dialog()
