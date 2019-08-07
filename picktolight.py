@@ -259,9 +259,9 @@ class ReadCMC(threading.Thread):
         self.Serial = None
         try:
             if (self.Reference == 1):
-                self.Serial = serial.Serial(port= "COM3", baudrate = config.baudComPort)
+                self.Serial = serial.Serial(port= config.comPort1, baudrate = config.baudComPort)
             elif (self.Reference == 2):
-                self.Serial = serial.Serial(port= "COM5", baudrate = config.baudComPort)
+                self.Serial = serial.Serial(port= config.comPort2, baudrate = config.baudComPort)
                 self.state = True
         except:
             UI.setStatus("Open COM Port fail!", "red")
@@ -275,6 +275,7 @@ class ReadCMC(threading.Thread):
     def ReadData(self):
         data = b''
         while runWhile:
+            time.sleep(0.1)
             if(SV.state):
                 data = self.Serial.read_all()
                 if (data != b''):
@@ -295,7 +296,6 @@ class ReadCMC(threading.Thread):
             GPIO2 = config.GPIOSlot2
             Model1 = config.modelNameInSlot[0]
             Model2 = config.modelNameInSlot[1]
-
         elif(self.Reference == 2):
             GPIO1 = config.GPIOSlot3
             GPIO2 = config.GPIOSlot4
@@ -370,20 +370,23 @@ class ServerCommunication(threading.Thread):
             UI.NextKeyPartH.set("NONE")
             config.modelNameInSlot[0] = ""
             config.modelNameInSlot[1] = ""
-            config.modelNameInSlot[2] = ""
-            config.modelNameInSlot[3] = ""
+            if (UI.DoubelCheckBox.get()):
+                config.modelNameInSlot[2] = ""
+                config.modelNameInSlot[3] = ""
         else:
             UI.LineNameH.set(data["LINENUMBER"] + " " + data["LINENAME"])
             UI.RackNameH.set(data["RACKNUMBER"])
-            config.modelNameInSlot[2] = data["SLOT1"]
-            config.modelNameInSlot[3] = data["SLOT2"]
-            # config.modelNameInSlot[2] = data["SLOT3"]
-            # config.modelNameInSlot[3] = data["SLOT4"]
+            config.modelNameInSlot[0] = data["SLOT1"]
+            config.modelNameInSlot[1] = data["SLOT2"]
+            if(UI.DoubelCheckBox.get()):
+                config.modelNameInSlot[2] = data["SLOT3"]
+                config.modelNameInSlot[3] = data["SLOT4"]
 
 config = Configuration()
 UI = Interface()
 SV = ServerCommunication()
 SV.start()
 ReadCMC(1).start()
-ReadCMC(2).start()
+if(UI.DoubelCheckBox.get()):
+    ReadCMC(2).start()
 UI.Dialog()
