@@ -289,6 +289,8 @@ class ReadCMC(threading.Thread):
                 continue
     def Processing(self,data):
         data = data.strip()
+        data = data.strip(chr(0x00))
+        data = data.strip(chr(0x1f))
         splData = data.split("^")
         matching = False
         if(self.Reference == 1):
@@ -325,7 +327,8 @@ class ReadCMC(threading.Thread):
                 self.state = True
         else:
             SV.ShowData(None)
-            UI.setStatus("Data IT incorrect!".format(splData[0]), "red")
+            UI.setStatus("Data IT incorrect!", "red")
+            logging.error("data IT incorrect! ({})".format(data))
             self.state = True
 class ServerCommunication(threading.Thread):
     def __init__(self):
