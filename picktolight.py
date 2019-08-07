@@ -28,6 +28,7 @@ class Configuration():
         self.backGround = None
         self.doubleRack = None
         self.modelNameInSlot = ["","","",""]
+        self.keyPartInSlot = ["","","",""]
         self.init()
 
     def init(self):
@@ -284,11 +285,15 @@ class ReadCMC(threading.Thread):
             GPIO2 = config.GPIOSlot2
             Model1 = config.modelNameInSlot[0]
             Model2 = config.modelNameInSlot[1]
+            KeyPart1 = config.keyPartInSlot[0]
+            KeyPart2 = config.keyPartInSlot[1]
         elif(self.Reference == 2):
             GPIO1 = config.GPIOSlot3
             GPIO2 = config.GPIOSlot4
             Model1 = config.modelNameInSlot[2]
             Model2 = config.modelNameInSlot[3]
+            KeyPart1 = config.keyPartInSlot[2]
+            KeyPart2 = config.keyPartInSlot[3]
         GPIO.output(GPIO1, 0)
         GPIO.output(GPIO2, 0)
         if(len(splData)==3):
@@ -296,11 +301,15 @@ class ReadCMC(threading.Thread):
                 if(Model1 in splData[0] or splData[0] in Model1):
                     UI.ModelNameH.set(Model1)
                     UI.KeyPartNoH.set(splData[1])
+                    UI.NextModelH(Model2)
+                    UI.NextKeyPartH.set(KeyPart2)
                     GPIO.output(GPIO1, 1)
                     matching = True
                 elif(Model2 in splData[0] or splData[0] in Model2):
                     UI.ModelNameH.set(Model2)
                     UI.KeyPartNoH.set(splData[1])
+                    UI.NextModelH(Model1)
+                    UI.NextKeyPartH.set(KeyPart1)
                     GPIO.output(GPIO2, 1)
                     matching = True
                 if(not matching):
@@ -369,9 +378,13 @@ class ServerCommunication(threading.Thread):
             UI.RackNameH.set(data["RACKNUMBER"])
             config.modelNameInSlot[0] = data["SLOT1"]
             config.modelNameInSlot[1] = data["SLOT2"]
+            config.keyPartInSlot[0] = data["KEYSLOT1"]
+            config.keyPartInSlot[1] = data["KEYSLOT2"]
             if(UI.DoubelCheckBox.get()):
                 config.modelNameInSlot[2] = data["SLOT3"]
                 config.modelNameInSlot[3] = data["SLOT4"]
+                config.keyPartInSlot[2] = data["KEYSLOT3"]
+                config.keyPartInSlot[3] = data["KEYSLOT4"]
 
 config = Configuration()
 UI = Interface()
