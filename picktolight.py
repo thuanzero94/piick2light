@@ -12,7 +12,7 @@ class Configuration():
     def __init__(self):
         self.path = "settings.json"
         self.defaultData = {"sizeUI":"1024x550","ipServer":"10.239.106.131", "portServer":1996, "comPort1":"/dev/ttyUSB0",\
-                            "comPort2":"/dev/ttyUSB1","baudComPort": 9600, "GPIOSlot1":2, "GPIOSlot2":3,"GPIOSlot3":4, "GPIOSlot4":5,"DoubleRack":False, "packName":"P21", "backGround":"linen"}
+                            "comPort2":"/dev/ttyUSB1","baudComPort": 9600, "GPIOSlot1":2, "GPIOSlot2":3,"GPIOSlot3":17, "GPIOSlot4":27,"DoubleRack":False, "packName":"P2.1", "backGround":"linen"}
         self.data = None
         self.sizeUI = None
         self.ipServer = None
@@ -237,7 +237,7 @@ class Interface():
         runWhile = False
         GPIO.output(config.GPIOSlot1, 0)
         GPIO.output(config.GPIOSlot2, 0)
-        if(self.DoubelCheckBox.get()):
+        if(config.doubleRack):
             GPIO.output(config.GPIOSlot3, 0)
             GPIO.output(config.GPIOSlot4, 0)
         GPIO.cleanup()
@@ -392,7 +392,6 @@ class ServerCommunication(threading.Thread):
                 config.modelNameInSlot[3] = ""
         else:
             UI.LineNameH.set(data["LINENUMBER"] + " " + data["LINENAME"])
-            UI.RackNameH.set(data["RACKNUMBER"])
             config.modelNameInSlot[0] = data["SLOT1"]
             config.modelNameInSlot[1] = data["SLOT2"]
             config.keyPartInSlot[0] = data["KEYSLOT1"]
