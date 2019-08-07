@@ -127,11 +127,11 @@ class Interface():
         self.setLabelHome("Key Part No  :", 20, position * height)
         self.setValueHome(self.KeyPartNoH, round(self.sizeFont) * 13, position * height)
         position = 9
-        self.setLabelHome("Next Model   :", 20, position * height)
-        self.setValueHome(self.NextModelH, round(self.sizeFont) * 13, position * height, "orange3")
+        self.setLabelHome("Next Model   :", 20, position * height, "orange4")
+        self.setValueHome(self.NextModelH, round(self.sizeFont) * 13, position * height, "orange4")
         position = 11
-        self.setLabelHome("Next Key Part:", 20, position * height)
-        self.setValueHome(self.NextKeyPartH, round(self.sizeFont) * 13, position * height, "orange3")
+        self.setLabelHome("Next Key Part:", 20, position * height,  "orange4")
+        self.setValueHome(self.NextKeyPartH, round(self.sizeFont) * 13, position * height, "orange4")
         self.Labelstatus.pack(fill=X, side=BOTTOM)
 
     def initSettingsTab(self):
@@ -267,6 +267,7 @@ class ReadCMC(threading.Thread):
         if(self.Serial != None):
             if(not self.Serial.is_open):
                 self.Serial.open()
+            self.Serial.timeout = 1
             self.ReadData()
     def ReadData(self):
         while runWhile:
@@ -311,6 +312,10 @@ class ReadCMC(threading.Thread):
                     UI.KeyPartNoH.set(splData[1])
                     UI.NextModelH.set(Model2)
                     UI.NextKeyPartH.set(KeyPart2)
+                    if(self.Reference == 1):
+                        UI.RackNameH.set(UI.RackNameH.get() + ".1")
+                    else:
+                        UI.RackNameH.set(UI.RackNameH.get() + ".3")
                     GPIO.output(GPIO1, 1)
                     matching = True
                 elif(Model2 in splData[0] or splData[0] in Model2):
@@ -318,6 +323,10 @@ class ReadCMC(threading.Thread):
                     UI.KeyPartNoH.set(splData[1])
                     UI.NextModelH.set(Model1)
                     UI.NextKeyPartH.set(KeyPart1)
+                    if(self.Reference == 1):
+                        UI.RackNameH.set(UI.RackNameH.get() + ".2")
+                    else:
+                        UI.RackNameH.set(UI.RackNameH.get() + ".4")
                     GPIO.output(GPIO2, 1)
                     matching = True
                 if(not matching):
@@ -378,7 +387,7 @@ class ServerCommunication(threading.Thread):
             UI.NextKeyPartH.set("NONE")
             config.modelNameInSlot[0] = ""
             config.modelNameInSlot[1] = ""
-            if (UI.DoubelCheckBox.get()):
+            if (config.doubleRack):
                 config.modelNameInSlot[2] = ""
                 config.modelNameInSlot[3] = ""
         else:
@@ -388,7 +397,7 @@ class ServerCommunication(threading.Thread):
             config.modelNameInSlot[1] = data["SLOT2"]
             config.keyPartInSlot[0] = data["KEYSLOT1"]
             config.keyPartInSlot[1] = data["KEYSLOT2"]
-            if(UI.DoubelCheckBox.get()):
+            if(config.doubleRack):
                 config.modelNameInSlot[2] = data["SLOT3"]
                 config.modelNameInSlot[3] = data["SLOT4"]
                 config.keyPartInSlot[2] = data["KEYSLOT3"]
@@ -404,7 +413,7 @@ GPIO.setup(config.GPIOSlot1, GPIO.OUT)
 GPIO.setup(config.GPIOSlot2, GPIO.OUT)
 GPIO.output(config.GPIOSlot1, 0)
 GPIO.output(config.GPIOSlot2, 0)
-if(UI.DoubelCheckBox.get()):
+if(config.doubleRack):
     ReadCMC(2).start()
     GPIO.setup(config.GPIOSlot3, GPIO.OUT)
     GPIO.setup(config.GPIOSlot4, GPIO.OUT)
