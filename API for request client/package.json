@@ -1,0 +1,20 @@
+{
+  "name": "a",
+  "version": "0.0.1",
+  "description": "Demo Socket",
+  "main": "server.js",
+  "scripts": {
+    "test": "Demo App"
+  },
+  "repository": {
+    "private": "true"
+  },
+  "author": "Admin",
+  "license": "ISC",
+  "dependencies": {
+    "ejs": "^2.6.2",
+    "express": "^4.17.1",
+    "mysql": "^2.17.1",
+    "socketio": "^1.0.0"
+  }
+}

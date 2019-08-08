@@ -1,0 +1,11 @@
+SELECT `mo`.`name` as 'ModelName', `line`.`number` as 'LineNumber', `line`.`name` as 'LineName', `racks`.`name` as 'RackNumber', `slots`.`running` as 'Running' , (CASE WHEN `racks`.`type` LIKE 'adapter' THEN `mo`.`adapter_name` ELSE `mo`.`document_name` END) as 'KeyPartNo'  FROM `racks` 
+INNER JOIN `line` ON `racks`.`id_line` = `line`.`id` 
+INNER JOIN `slots` ON `racks`.`id` = `slots`.`id_rack` 
+INNER JOIN ( 
+    SELECT `models`.`id`, `models`.`name`, `documents`.`name` as 'document_name', `adapters`.`name` as 'adapter_name' 
+    FROM `models`
+    INNER JOIN `adapters` ON `models`.`id_adapter` = `adapters`.`id` 
+    INNER JOIN `documents` ON `models`.`id_document` = `documents`.`id` 
+) mo ON `slots`.`id_model` = `mo`.`id` 
+WHERE `racks`.`name` LIKE ''
+LIMIT 0,2 

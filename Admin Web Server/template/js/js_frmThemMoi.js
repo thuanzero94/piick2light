@@ -1,0 +1,10 @@
+$(document).ready(function(){
+	$("#rd_thu").click(function(){
+		$(".nhomThu").show();
+		$(".nhomChi").hide();
+	});
+	$("#rd_chi").click(function(){
+		$(".nhomChi").show();
+		$(".nhomThu").hide();
+	});
+});

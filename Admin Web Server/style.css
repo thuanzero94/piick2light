@@ -1,0 +1,47 @@
+body{
+	padding: 0px;
+	margin: 0px;
+	font-size: 12px !important;	
+}
+
+table tr td{
+	padding: 0px 20px;
+}	
+
+.content{
+	width: auto;
+	height: auto;
+	display: inline-block;
+}
+
+/*-----Menu head-----*/
+.menu-head{
+	width: 100%;
+	height: 30px;
+}
+.menu-head ul{
+	width: 100%;
+	height: 30px;
+}
+iframe header content{
+	display: none;
+}
+
+
+a:hover{
+	color: #0f0;
+}
+/*-----End menu head-----*/
+
+.padd-0{
+	padding: 0px;
+}
+
+.text-end{
+	margin-top: 5px;
+	text-align: end;
+}
+
+.float-right{
+	float: right;
+}

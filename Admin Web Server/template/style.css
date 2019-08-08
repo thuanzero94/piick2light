@@ -1,0 +1,35 @@
+.myChart label{
+	width: 100%;
+	text-align: center;
+	font-family: bold;
+	font-size: 30px;
+	margin-top: 25px;
+}
+.btn_list{
+	text-align: center;
+}
+button:hover{
+	cursor: pointer;
+}
+
+.color-icon{
+	color: #868E96;
+}
+
+.my-form{
+	padding: 5px 20px !important;
+}
+
+.slot-3-4{
+	display: none;
+}
+
+body{
+	padding: 0px;
+	margin: 0px;
+	font-size: 12px !important;	
+}
+
+.font-size-12{
+	font-size: 12px !important;
+}
