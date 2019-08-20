@@ -1,1 +1,16 @@
-{"sizeUI": "1024x550", "packName": "P2.1", "GPIOSlot4": 27, "GPIOSlot1": 2, "comPort2": "/dev/ttyUSB1", "DoubleRack": false, "backGround": "linen", "GPIOSlot2": 3, "portServer": 1996, "ipServer": "10.239.106.131", "baudComPort": 9600, "GPIOSlot3": 17, "comPort1": "/dev/ttyUSB0"}
+{
+  "sizeUI": "1024x550",
+  "packName": "P2.1",
+  "GPIOSlot4": 27,
+  "GPIOSlot1": 2,
+  "comPort2": "COM10",
+  "DoubleRack": false,
+  "backGround": "linen",
+  "GPIOSlot2": 3,
+  "portServer": 1996,
+  "ipServer": "127.0.0.1",
+  "baudComPort": 9600,
+  "GPIOSlot3": 17,
+  "comPort1": "COM3",
+  "lightTimer": 30
+}

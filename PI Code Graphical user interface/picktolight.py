@@ -8,6 +8,7 @@ logging.basicConfig(filename='app.log', filemode='w', format='[%(asctime)s] p%(p
 # mode flag
 runWhile = True
 hasError = False
+runTimer = True
 class Configuration():
     def __init__(self):
         self.path = "settings.json"
@@ -29,6 +30,8 @@ class Configuration():
         self.doubleRack = None
         self.modelNameInSlot = ["","","",""]
         self.keyPartInSlot = ["","","",""]
+        # Alan add light_timer
+        self.lightTimer = None
         self.init()
 
     def init(self):
@@ -92,6 +95,10 @@ class Interface():
         self.KeyPartNoH = StringVar()
         self.NextModelH = StringVar()
         self.NextKeyPartH = StringVar()
+        self.RackRun = StringVar()
+        self.ModelRun = StringVar()
+        self.KeyPartRun = StringVar()
+        self.SlotRun = StringVar()
         self.Labelstatus = Label(self.home, textvariable=self.status, bg="green" , fg="white", \
                                  font=("Courier", round(self.sizeFont / 1.5), "bold"))
         #initialization Setting table
@@ -112,26 +119,45 @@ class Interface():
         self.setStatus()
         self.initHomeTab()
         self.initSettingsTab()
+
     def initHomeTab(self):
         height = self.ui.winfo_height() / 15
+        width = self.ui.winfo_width() / 2
         position = 1
-        self.setLabelHome("Line         :", 20, position * height)
-        self.setValueHome(self.LineNameH, round(self.sizeFont) * 13, position * height)
+        self.setLabelHome("Line :", 20, position * height)
+        self.setValueHome(self.LineNameH, round(self.sizeFont) * len("Line :"), position * height)
+        self.setLabelHome("Rack Name :", 20 + width, position * height)
+        self.setValueHome(self.RackNameH, round(self.sizeFont) * len("Rack Name ") + width, position * height)
+        # Set Running
         position = 3
-        self.setLabelHome("Rack Name    :", 20, position * height)
-        self.setValueHome(self.RackNameH, round(self.sizeFont) * 13, position * height)
+        self.setLabelHome("RUNNING - ", width - round(self.sizeFont) * 6, position * height)
+        self.setValueHome(self.SlotRun, width - round(self.sizeFont) * (6 - len("RUNNING ")), position * height)
+        position = 4
+        self.setLabelHome("Rack     :", width - round(self.sizeFont) * 10, position * height)
+        self.setValueHome(self.RackRun, width - round(self.sizeFont) * (10 - len("Rack     ")), position * height)
         position = 5
-        self.setLabelHome("Model Name   :", 20, position * height)
-        self.setValueHome(self.ModelNameH, round(self.sizeFont) * 13, position * height)
-        position = 7
-        self.setLabelHome("Key Part No  :", 20, position * height)
-        self.setValueHome(self.KeyPartNoH, round(self.sizeFont) * 13, position * height)
+        self.setLabelHome("Model    :", width - round(self.sizeFont) * 10, position * height)
+        self.setValueHome(self.ModelRun, width - round(self.sizeFont) * (10 - len("Model    ")), position * height)
+        position = 6
+        self.setLabelHome("Key Part :", width - round(self.sizeFont) * 10, position * height)
+        self.setValueHome(self.KeyPartRun, width - round(self.sizeFont) * (10 - len("Key Part ")), position * height)
+        # Slot Name
         position = 9
-        self.setLabelHome("Next Model   :", 20, position * height, "orange4")
-        self.setValueHome(self.NextModelH, round(self.sizeFont) * 13, position * height, "orange4")
+        self.setLabelHome("SLOT 1", round(self.sizeFont) * 2, position * height, "blue4")
+        self.setLabelHome("SLOT 2", round(self.sizeFont) * 2 + width, position * height, "black")
+        # Model
+        position = 10
+        self.setLabelHome("Model    :", 20, position * height, "blue4")
+        self.setValueHome(self.ModelNameH, round(self.sizeFont) * len("Model    "), position * height)
+        self.setLabelHome("Model    :", 20 + width, position * height, "black")
+        self.setValueHome(self.NextModelH, round(self.sizeFont) * len("Model    ") + width, position * height)
+        # Key Part
         position = 11
-        self.setLabelHome("Next Key Part:", 20, position * height,  "orange4")
-        self.setValueHome(self.NextKeyPartH, round(self.sizeFont) * 13, position * height, "orange4")
+        self.setLabelHome("Key Part :", 20, position * height, "blue4")
+        self.setValueHome(self.KeyPartNoH, round(self.sizeFont) * len("Key Part "), position * height)
+        self.setLabelHome("Key Part :", 20 + width, position * height, "black")
+        self.setValueHome(self.NextKeyPartH, round(self.sizeFont) * len("Key Part ") + width, position * height)
+
         self.Labelstatus.pack(fill=X, side=BOTTOM)
 
     def initSettingsTab(self):
@@ -245,7 +271,6 @@ class Interface():
                 pass
         GPIO.cleanup()
         self.ui.destroy()
-        
 
     def Dialog(self):
         self.ui.mainloop()
@@ -279,7 +304,7 @@ class ReadCMC(threading.Thread):
                 data = b''
                 while runWhile:
                     s = self.Serial.read()
-                    if(s != chr(0x00) and s != chr(0x1F)):
+                    if (s.decode() != chr(0x00) and s.decode() != chr(0x1F)):
                         data += s
                     if(s == b'\r'):
                         break
@@ -290,7 +315,7 @@ class ReadCMC(threading.Thread):
             else:
                 continue
     def Processing(self,data):
-        splData = data.split("^")
+        sqlData = data.split("^")
         matching = False
         if(self.Reference == 1):
             GPIO1 = config.GPIOSlot1
@@ -308,40 +333,59 @@ class ReadCMC(threading.Thread):
             KeyPart2 = config.keyPartInSlot[3]
         GPIO.output(GPIO1, 0)
         GPIO.output(GPIO2, 0)
-        if(len(splData)==3):
-            if("PASS" in splData[2].upper() and Model1 != "" and Model2 != ""):
-                if(Model1 in splData[0] or splData[0] in Model1):
-                    UI.ModelNameH.set(Model1)
-                    UI.KeyPartNoH.set(splData[1])
-                    UI.NextModelH.set(Model2)
-                    UI.NextKeyPartH.set(KeyPart2)
-                    if(self.Reference == 1):
-                        UI.RackNameH.set(config.packName + ".1")
-                    else:
-                        UI.RackNameH.set(config.packName + ".3")
+        if (len(sqlData) == 3):
+            if ("PASS" in sqlData[2].upper() and Model1 != "" and Model2 != ""):
+                if (Model1 in sqlData[0] or sqlData[0] in Model1):
+                    # UI.ModelNameH.set(Model1)
+                    # UI.KeyPartNoH.set(sqlData[1])
+                    # UI.NextModelH.set(Model2)
+                    # UI.NextKeyPartH.set(KeyPart2)
+                    UI.ModelRun.set(Model1)
+                    UI.KeyPartRun.set(sqlData[1])
+                    UI.SlotRun.set("SLOT 1")
+                    UI.RackRun.set(config.packName + ".1")
+                    # if(self.Reference == 1):
+                    #    UI.RackNameH.set(config.packName + ".1")
+                    # else:
+                    #    UI.RackNameH.set(config.packName + ".1")
+
                     GPIO.output(GPIO1, 1)
+                    led_off_timer(GPIO1).start()
                     matching = True
-                elif(Model2 in splData[0] or splData[0] in Model2):
-                    UI.ModelNameH.set(Model2)
-                    UI.KeyPartNoH.set(splData[1])
-                    UI.NextModelH.set(Model1)
-                    UI.NextKeyPartH.set(KeyPart1)
-                    if(self.Reference == 1):
-                        UI.RackNameH.set(config.packName + ".2")
-                    else:
-                        UI.RackNameH.set(config.packName + ".4")
+                elif (Model2 in sqlData[0] or sqlData[0] in Model2):
+                    # UI.ModelNameH.set(Model2)
+                    # UI.KeyPartNoH.set(sqlData[1])
+                    # UI.NextModelH.set(Model1)
+                    # UI.NextKeyPartH.set(KeyPart1)
+                    UI.ModelRun.set(Model2)
+                    UI.KeyPartRun.set(sqlData[1])
+                    UI.SlotRun.set("SLOT 2")
+                    UI.RackRun.set(config.packName + ".2")
+                    # if(self.Reference == 1):
+                    #    UI.RackNameH.set(config.packName + ".2")
+                    # else:
+                    #    UI.RackNameH.set(config.packName + ".2")
                     GPIO.output(GPIO2, 1)
+                    led_off_timer(GPIO2).start()
                     matching = True
                 if(not matching):
-                    UI.setStatus("\"{}\" model incorrect!".format(splData[0]), "red")
+                    UI.setStatus("\"{}\" model incorrect!".format(sqlData[0]), "red")
                     self.state = False
                 elif(not self.state):
                     UI.setStatus("Running!", "green")
                     self.state = True
             else:
                 SV.ShowData(None)
-                UI.setStatus("Fail for \"{}\" model!".format(splData[0]), "red")
+                UI.setStatus("Fail for \"{}\" model!".format(sqlData[0]), "red")
                 self.state = True
+        # FxVN AlanRD - Check Link DONEPASS -> Turn off light
+        elif (len(sqlData) == 4):
+            global runTimer
+            if ("PASSDONE" in sqlData[3]):
+                logging.info('LINK COMPLETE. Turn off light')
+                GPIO.output(GPIO1, 0)
+                GPIO.output(GPIO2, 0)
+                runTimer = False
         else:
             SV.ShowData(None)
             UI.setStatus("Data IT incorrect!", "red")
@@ -388,6 +432,10 @@ class ServerCommunication(threading.Thread):
             UI.KeyPartNoH.set("NONE")
             UI.NextModelH.set("NONE")
             UI.NextKeyPartH.set("NONE")
+            UI.RackRun.set("NONE")
+            UI.ModelRun.set("NONE")
+            UI.KeyPartRun.set("NONE")
+            UI.SlotRun.set("NONE")
             config.modelNameInSlot[0] = ""
             config.modelNameInSlot[1] = ""
             if (config.doubleRack):
@@ -399,11 +447,38 @@ class ServerCommunication(threading.Thread):
             config.modelNameInSlot[1] = data["SLOT2"]
             config.keyPartInSlot[0] = data["KEYSLOT1"]
             config.keyPartInSlot[1] = data["KEYSLOT2"]
+            # Alan add Show Name
+            UI.RackNameH.set(data["RACKNUMBER"])
+            UI.ModelNameH.set(data["SLOT1"])
+            UI.KeyPartNoH.set(data["KEYSLOT1"])
+            UI.NextModelH.set(data["SLOT2"])
+            UI.NextKeyPartH.set(data["KEYSLOT2"])
             if(config.doubleRack):
                 config.modelNameInSlot[2] = data["SLOT3"]
                 config.modelNameInSlot[3] = data["SLOT4"]
                 config.keyPartInSlot[2] = data["KEYSLOT3"]
                 config.keyPartInSlot[3] = data["KEYSLOT4"]
+
+
+class led_off_timer(threading.Thread):
+    def __init__(self, GPIO_PIN):
+        threading.Thread.__init__(self)
+        self.PIN = GPIO_PIN
+
+    def run(self):
+        logging.info("start timer thread: pin-{}, status-{}".format(self.PIN, GPIO.input(self.PIN)))
+        if GPIO.input(self.PIN):
+            logging.info("Wait {} seconds before turn off GPIO {}....".format(config.lightTimer, self.PIN))
+            start = time.time()
+            while runWhile:
+                time.sleep(0.1)
+                if not runTimer:
+                    logging.info("Interrupt Timer")
+                if time.time() - start > int(config.lightTimer):
+                    GPIO.output(self.PIN, 0)
+                    logging.info("Turn Off GPIO {}".format(self.PIN))
+                    break
+
 
 config = Configuration()
 UI = Interface()
