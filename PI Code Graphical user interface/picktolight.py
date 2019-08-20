@@ -30,8 +30,8 @@ class Configuration():
         self.doubleRack = None
         self.modelNameInSlot = ["","","",""]
         self.keyPartInSlot = ["","","",""]
-        # Alan add light_timer
-        self.lightTimer = None
+        # Add version config
+        self.version = None
         self.init()
 
     def init(self):
@@ -57,6 +57,7 @@ class Configuration():
         self.packName       = self.data["packName"]
         self.backGround     = self.data["backGround"]
         self.doubleRack     = self.data["DoubleRack"]
+        self.version        = self.data["version"]
 
     def update(self, key, value):
         self.data[key] = value
@@ -69,7 +70,7 @@ class Interface():
     def __init__(self):
 
         self.ui = Tk()
-        self.ui.title("Packing Manage")
+        self.ui.title("Pick to Light {} - Designed by SWRD Alan".format(config.version))
         try:
             self.ui.geometry(config.sizeUI)
         except:
@@ -124,10 +125,10 @@ class Interface():
         height = self.ui.winfo_height() / 15
         width = self.ui.winfo_width() / 2
         position = 1
-        self.setLabelHome("Line :", 20, position * height)
-        self.setValueHome(self.LineNameH, round(self.sizeFont) * len("Line :"), position * height)
-        self.setLabelHome("Rack Name :", 20 + width, position * height)
-        self.setValueHome(self.RackNameH, round(self.sizeFont) * len("Rack Name ") + width, position * height)
+        self.setLabelHome("Line :", 20, position * height, "grey")
+        self.setValueHome(self.LineNameH, round(self.sizeFont) * len("Line :"), position * height, "green")
+        self.setLabelHome("Rack Position :", round(self.sizeFont) * 2 + width, position * height, "grey")
+        self.setValueHome(self.RackNameH, round(self.sizeFont) * len("Rack Position :") + width, position * height, "green")
         # Set Running
         position = 3
         self.setLabelHome("RUNNING - ", width - round(self.sizeFont) * 6, position * height)
@@ -315,6 +316,7 @@ class ReadCMC(threading.Thread):
             else:
                 continue
     def Processing(self,data):
+        logging.info("SF Send: {}".format(data))
         sqlData = data.split("^")
         matching = False
         if(self.Reference == 1):
@@ -350,7 +352,7 @@ class ReadCMC(threading.Thread):
                     #    UI.RackNameH.set(config.packName + ".1")
 
                     GPIO.output(GPIO1, 1)
-                    led_off_timer(GPIO1).start()
+                    # led_off_timer(GPIO1).start()
                     matching = True
                 elif (Model2 in sqlData[0] or sqlData[0] in Model2):
                     # UI.ModelNameH.set(Model2)
@@ -366,7 +368,7 @@ class ReadCMC(threading.Thread):
                     # else:
                     #    UI.RackNameH.set(config.packName + ".2")
                     GPIO.output(GPIO2, 1)
-                    led_off_timer(GPIO2).start()
+                    # led_off_timer(GPIO2).start()
                     matching = True
                 if(not matching):
                     UI.setStatus("\"{}\" model incorrect!".format(sqlData[0]), "red")
@@ -460,24 +462,24 @@ class ServerCommunication(threading.Thread):
                 config.keyPartInSlot[3] = data["KEYSLOT4"]
 
 
-class led_off_timer(threading.Thread):
-    def __init__(self, GPIO_PIN):
-        threading.Thread.__init__(self)
-        self.PIN = GPIO_PIN
-
-    def run(self):
-        logging.info("start timer thread: pin-{}, status-{}".format(self.PIN, GPIO.input(self.PIN)))
-        if GPIO.input(self.PIN):
-            logging.info("Wait {} seconds before turn off GPIO {}....".format(config.lightTimer, self.PIN))
-            start = time.time()
-            while runWhile:
-                time.sleep(0.1)
-                if not runTimer:
-                    logging.info("Interrupt Timer")
-                if time.time() - start > int(config.lightTimer):
-                    GPIO.output(self.PIN, 0)
-                    logging.info("Turn Off GPIO {}".format(self.PIN))
-                    break
+# class led_off_timer(threading.Thread):
+#     def __init__(self, GPIO_PIN):
+#         threading.Thread.__init__(self)
+#         self.PIN = GPIO_PIN
+#
+#     def run(self):
+#         logging.info("start timer thread: pin-{}, status-{}".format(self.PIN, GPIO.input(self.PIN)))
+#         if GPIO.input(self.PIN):
+#             logging.info("Wait {} seconds before turn off GPIO {}....".format(config.lightTimer, self.PIN))
+#             start = time.time()
+#             while runWhile:
+#                 time.sleep(0.1)
+#                 if not runTimer:
+#                     logging.info("Interrupt Timer")
+#                 if time.time() - start > int(config.lightTimer):
+#                     GPIO.output(self.PIN, 0)
+#                     logging.info("Turn Off GPIO {}".format(self.PIN))
+#                     break
 
 
 config = Configuration()

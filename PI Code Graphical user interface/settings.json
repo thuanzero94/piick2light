@@ -1,4 +1,5 @@
 {
+  "version": "v2.0",
   "sizeUI": "1024x550",
   "packName": "P2.1",
   "GPIOSlot4": 27,
@@ -8,7 +9,7 @@
   "backGround": "linen",
   "GPIOSlot2": 3,
   "portServer": 1996,
-  "ipServer": "127.0.0.1",
+  "ipServer": "192.168.100.12",
   "baudComPort": 9600,
   "GPIOSlot3": 17,
   "comPort1": "COM3",
